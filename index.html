@@ -1,0 +1,265 @@
+<!doctype html>
+<!-- ev-calc, Pierre Haessig, 2019–2020, CC-BY 4.0 -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>EV tools</title>
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="shortcut icon" href="ev-calc-icon.png" type="image/png">
+  <script src="ev-calc.js"></script>
+</head>
+
+<body>
+  <div class="paper">
+  
+
+  <form method="get" id="ev-calc" name="ev-calc">
+    <div class="center-text"><h2>EV tools 🏭</h2></div>
+
+    <div class="hypothesis">
+      <h3><label for="bs">EV battery size:</label></h3>
+      <input type="number" class="number nom" name="bs" id="bs" min="0" step="any" value="52">
+      <span class="unit">kWh</span>
+
+      <div class="help-box hidden">
+        <button type="button" class="help-btn">?</button>
+        <div class="help-text">
+          <p>
+          Size of the battery: the bigger, the higher car autonomy,
+          but the more manufacturing impact.
+          Also, heavier cars need bigger batteries…
+          </p>
+          <div class="presets">
+            Car examples:
+            <button type="button" onclick="setInputs({bs:22})">Renault Twingo 2020</button>
+            <button type="button" onclick="setInputs({bs:52})">Renault Zoe 2019</button>
+            <button type="button" onclick="setInputs({bs:90})">Jaguar I-Pace 2018</button>
+          </div>
+        </div>
+      </div> <!-- .help-box -->
+    </div> <!-- .hypothesis -->
+
+    <div class="hypothesis">
+      <h3>Battery manufacturing</h3>
+
+      <div class="sub-hypothesis">
+        <h4><label for="bmuco2_nom">Manufacturing CO<sub>2</sub> intensity:</label></h4>
+        <input type="number" class="number nom" name="bmuco2_nom" id="bmuco2_nom" min="0" step="any" value="90">
+        <span class="unit">kgCO<sub>2</sub>/kWh,</span>
+        <label for="bmuco2_lb" class="lb">from</label>
+        <input type="number" class="number" name="bmuco2_lb" id="bmuco2_lb" min="0" step="any" value="60">
+        <label for="bmuco2_ub" class="ub">to</label>
+        <input type="number" class="number" name="bmuco2_ub" id="bmuco2_ub" min="0" step="any" value="110">
+
+        <div class="help-box hidden">
+          <button type="button" class="help-btn">?</button>
+          <div class="help-text">
+            <p>
+              How much greenhouse gases does it emit to manufacture 1 kWh of battery?
+              The figure should include all manufacturing stages:
+              mining raw materials, refining them, then manufacturing cells
+              and finally assemble a complete battery pack.
+            </p>
+            <p>
+              There are two underlying parameters for the impact of each stage:
+              the energy intensity and the carbon intensity of energy being used.
+              Thus, there are two ways to reduce the impact:
+              1) increase the energy efficiency and
+              2) use energy sources which emit less greenhouse gases.
+              Also, recycling can be very beneficial.
+            </p>
+            <p>
+              Battery manufacturing impact is the weak point of EVs,
+              creating a huge “emissions debt” before their first drive.
+              Still, manufacturing is getting more and more efficient (as well as cost effective).
+              In the 2010-2020 decade, the change is rapid, so that impact figures
+              becomes <em>rapidly outdated</em>!
+            </p>
+            <div class="presets">
+              Data from recent metanalyses:
+              <button type="button" onclick="setInputs({bmuco2_nom:175, bmuco2_lb:150 ,bmuco2_ub:200})">IVL 2017</button>
+              <button type="button" onclick="setInputs({bmuco2_nom:106, bmuco2_lb:62 ,bmuco2_ub:162})">FfE 2019</button>
+              <button type="button" onclick="setInputs({bmuco2_nom:84, bmuco2_lb:61 ,bmuco2_ub:106})">IVL 2019</button>
+            </div>
+          </div>
+        </div> <!-- .help-box -->
+      </div> <!-- .sub-hypothesis -->
+    </div> <!-- .hypothesis -->
+
+    <div class="result">
+      <h3>Impact of manufacturing the battery of the electric vehicle:</h3>
+      <ul>
+        <li>Battery manufacturing CO<sub>2</sub>: <span id='bmco2'>…</span></li>
+      </ul>
+    </div>
+
+
+    <h2>Vehicle usage 🛣️</h2>
+
+    <div class="hypothesis">
+      <h3>EV usage</h3>
+      <div class="sub-hypothesis">
+        <h4><label for="evc_nom">EV consumption (at the plug):</label></h4>
+        <input type="number" class="number nom" name="evc_nom" id="evc_nom" min="0" step="any" value="16">
+        <span class="unit">kWh/100 km,</span>
+        <label for="evc_lb" class="lb">from</label>
+        <input type="number" class="number" name="evc_lb" id="evc_lb" min="0" step="any" value="14">
+        <label for="evc_ub" class="ub">to</label>
+        <input type="number" class="number" name="evc_ub" id="evc_ub" min="0" step="any" value="18">
+      </div> <!-- .sub-hypothesis -->
+
+      <div class="sub-hypothesis">
+        <h4><label for="cl">Grid and charging losses</label></h4>
+        <input type="number" class="number nom" name="cl_nom" id="cl_nom" min="0" max="100" step="any" value="18">
+        <span class="unit">%,</span>
+        <label for="cl_lb" class="lb">from</label>
+        <input type="number" class="number" name="cl_lb" id="cl_lb" min="0" max="100" step="any" value="17">
+        <label for="cl_ub" class="ub">to</label>
+        <input type="number" class="number" name="cl_ub" id="cl_ub" min="0" max="100" step="any" value="19">
+      </div> <!-- .sub-hypothesis -->
+
+      <div class="sub-hypothesis">
+        <h4><label for="cco2_nom">EV charging CO<sub>2</sub> intensity:</label></h4>
+        <input type="number" class="number nom" name="cco2_nom" id="cco2_nom" min="0" step="any" value="60">
+        <span class="unit">gCO<sub>2</sub>/kWh,</span>
+        <label for="cco2_lb" class="lb">from</label>
+        <input type="number" class="number" name="cco2_lb" id="cco2_lb" min="0" step="any" value="40">
+        <label for="cco2_ub" class="ub">to</label>
+        <input type="number" class="number" name="cco2_ub" id="cco2_ub" min="0" step="any" value="80">
+
+        <div class="help-box hidden">
+          <button type="button" class="help-btn">?</button>
+          <div class="help-text">
+            <p>
+              A key factor for the cleaness of EV usage is the carbon intensity
+              of the electricity mix used for EV charging.
+              It should be low carbon.
+              Still, even we the relatively high carbon content of the German mix
+              (which dropped by 40% since 1990),
+              an EV can do better than an ICE!
+            </p>
+            <div class="presets">
+              Presets:
+              <button type="button" onclick="setInputs({cco2_nom:60, cco2_lb: 40, cco2_ub: 80})">French mix 🇫🇷</button>
+              <button type="button" onclick="setInputs({cco2_nom:267, cco2_lb: 300, cco2_ub: 250})">EU mix 🇪🇺</button>
+              <button type="button" onclick="setInputs({cco2_nom:414, cco2_lb: 400, cco2_ub: 500})">German mix 🇩🇪</button>
+              <button type="button" onclick="setInputs({cco2_nom:1000, cco2_lb: 900, cco2_ub: 1100})">100% Coal! 🏭</button>
+            </div>
+          </div>
+        </div> <!-- .help-box -->
+      </div> <!-- .sub-hypothesis -->
+    </div> <!-- .hypothesis -->
+
+    <div class="hypothesis">
+      <h3>ICE usage</h3>
+      <div class="sub-hypothesis">
+        <h4><label for="icec_nom">ICE consumption:</label></h4>
+        <input type="number" class="number nom" name="icec_nom" id="icec_nom" min="0" step="any" value="6.0">
+        <span class="unit">l/100 km,</span>
+        <label for="icec_lb" class="lb">from</label>
+        <input type="number" class="number" name="icec_lb" id="icec_lb" min="0" step="any" value="5.0">
+        <label for="icec_ub" class="ub">to</label>
+        <input type="number" class="number" name="icec_ub" id="icec_ub" min="0" step="any" value="7.0">
+
+        <div class="help-box hidden">
+          <button type="button" class="help-btn">?</button>
+          <div class="help-text">
+            <p>
+              The heavier the car, the higher fuel consumption!
+            </p>
+            <p>
+              Also, one should preferably use real driving consumption figures,
+              rather than standardized test results which are over optimistic
+              (especially the European NEDC test which is now, at last, replaced by WLTP).
+            </p>
+            <p>
+              Diesel engines are generally more efficient than gasoline engines,
+              but one should not forget the 13% extra emissions per volume
+              of this fuel!
+              This reduces, but does not cancel, the advantage of Diesel.
+            </p>
+            <div class="presets">
+              Car examples:
+              <button type="button" onclick="setInputs({icec_nom:6.5, icec_lb: 5.6, icec_ub: 7.6})">Golf Gasoline</button>
+              <button type="button" onclick="setInputs({icec_nom:6.0, icec_lb: 5.0, icec_ub: 7.1})">Polo Gasoline</button>
+              <button type="button" onclick="setInputs({icec_nom:5.6, icec_lb: 4.9, icec_ub: 6.4})">Golf Diesel</button>
+              (data from <a href="https://www.spritmonitor.de/en/">Spritmonitor</a>)
+            </div>
+          </div>
+        </div> <!-- .help-box -->
+      </div> <!-- .sub-hypothesis -->
+
+      <div class="sub-hypothesis">
+        <h4><label for="gco2_nom">Fuel CO<sub>2</sub> content:</label></h4>
+        <input type="number" class="number nom" name="gco2_nom" id="gco2_nom" min="0" step="any" value="2.80">
+        <span class="unit">kgCO<sub>2</sub>/l,</span>
+        <label for="gco2_lb" class="lb">from</label>
+        <input type="number" class="number" name="gco2_lb" id="gco2_lb" min="0" step="any" value="2.75">
+        <label for="gco2_ub" class="ub">to</label>
+        <input type="number" class="number" name="gco2_ub" id="gco2_ub" min="0" step="any" value="2.85">
+
+        <div class="help-box hidden">
+          <button type="button" class="help-btn">?</button>
+          <div class="help-text">
+            <p>
+              Each fuel emits a given amount of CO<sub>2</sub> per unit volume.
+              Diesel emits about 13% more than Gasoline, mostly because of its higher density.
+            </p>
+            <p>
+              Most emissions happen at the vehicle exhaust (direct emissions),
+              but one should not forget upstream emissions (“Well-to-Tank”) during
+              the manufacturing (mostly: extraction of crude oil and refining).
+              In the end, the "Well-to-Wheels" (WTW) emissions are about 1.2 higher than
+              direct emissions.
+            </p>
+            <div class="presets">
+              Presets:
+              <button type="button" onclick="setInputs({gco2_nom:2.80, gco2_lb: 2.75, gco2_ub: 2.85})">Gasoline WTW</button>
+              <button type="button" onclick="setInputs({gco2_nom:3.18, gco2_lb: 3.12, gco2_ub: 3.23})">Diesel WTW</button>
+            </div>
+          </div>
+        </div> <!-- .help-box -->
+      </div> <!-- .sub-hypothesis -->
+    </div> <!-- .hypothesis -->
+
+    <div class="result">
+      <h3>CO<sub>2</sub> emissions of vehicle usage:</h3>
+      <ul>
+        <li> <h4>EV:</h4>     <span id='evco2'>…</span></li>
+        <li> <h4>ICE:</h4>    <span id='iceco2'>…</span></li>
+        <li> <h4>ICE−EV:</h4> <span id='diff_co2'>…</span></li>
+      </ul>
+    </div>
+
+    <h2>Comparison EV <em>vs</em> ICE ⚖️</h2>
+    <p>
+      At which distance does the EV reach
+      CO<sub>2</sub> parity with ICE ?
+    </p>
+    <div class="result final-result">
+      <h3>Distance to reach CO<sub>2</sub> parity:</h3>
+      <span id='dpar'>…</span>
+    </div>
+
+    <div>
+      <label for="round">Round results meaningfully</label>
+      <input type="checkbox" checked id="round" name="round">
+    </div>
+  </form>
+
+  <p>
+    <button id="shareBtn">Share your results 📤</button>
+  </p>
+
+  <p>
+    <button id="resetBtn">Reset values</button>
+  </p>
+
+
+</div><!-- /div#paper -->
+</body>
+</html>
